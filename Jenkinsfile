@@ -42,29 +42,6 @@ podTemplate(label: 'docker',
 
             milestone()
 
-            def kubeconfig = [
-                [$class: 'VaultSecret', path: 'secret/jenkins/tech.kubeconfig', secretValues: [
-                    [$class: 'VaultSecretValue', envVar: 'KUBE_TOKEN', vaultKey: 'token'],
-                ]]
-            ]
-
-            def namespace = "test-core"
-            stage("Promote to CI environment: ${namespace}") {
-                container('kubectl-helm') {
-                    wrap([$class: 'VaultBuildWrapper', vaultSecrets: kubeconfig]) {
-                        sh "kubectl config set-cluster ci --server=https://817FA3AE9522FD97B1C89472CB9ACF61.sk1.us-east-1.eks.amazonaws.com --insecure-skip-tls-verify"
-                        sh "kubectl config set-credentials ci --token=$KUBE_TOKEN"
-                        sh "kubectl config set-context ci --user=ci --cluster=ci --namespace ${namespace}"
-                        sh "kubectl config use-context ci"
-                        sh "helm upgrade ${projectName} chart/ --install --wait --namespace ${namespace} --set image.tag=${buildTag} --set ingress.hosts[0]=${namespace}.moven.com --set ingress.tls[0].secretName=moven-tls --set ingress.tls[0].hosts[0]=${namespace}.moven.com"
-                    }
-                }
-            }
-
-            stage('Integration Tests') {
-                // run integration tests
-            }
-
             stage('Helm Chart') {
                 container('kubectl-helm') {
                     println("INFO: checking charts.moven.us for ${projectName}")
@@ -107,11 +84,6 @@ podTemplate(label: 'docker',
                 }
                 milestone()
             }
-            
-
-            stage('Promote to Staging environment(s)') {
-                println "To promote this to built to a staging envionment: helm upgrade ${projectName} moven/${projectName} --install --wait --set image.tag=${buildTag}"
-          }
         }
     }
 }
