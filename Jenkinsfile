@@ -9,7 +9,7 @@ podTemplate(label: 'docker',
   ) {
 
     node('docker') {
-      def projectName = 'moven'
+      def projectName = 'ali-px-disks'
       def scmVars = checkout scm
       def branchName = scmVars.GIT_BRANCH
       def shortCommit = scmVars.GIT_COMMIT.take(7)
