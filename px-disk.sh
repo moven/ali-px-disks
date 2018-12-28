@@ -65,7 +65,7 @@ shouldAttachPXDisk() {
 
 getCandidatePxDiskId() {
   DISK_INDEX=$(( $RANDOM % $(pxAvailableDiskCount) ))
-  PX_CANDIDATE_DISK=$(aliyun ecs DescribeDisks | jq -r ".Disks.Disk[${DISK_INDEX}] | select(.Description | contains(\"${PX_DISK_PREFIX}\")) | select(.Status == \"Available\") | .DiskId")
+  PX_CANDIDATE_DISK=$(aliyun ecs DescribeDisks | jq -r "[ .Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\")) | select(.Status == \"Available\") ] | .[${DISK_INDEX}] | .DiskId")
   echo ${PX_CANDIDATE_DISK}
 }
 
