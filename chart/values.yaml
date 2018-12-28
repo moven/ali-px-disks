@@ -3,8 +3,8 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: nginx
-  tag: stable
+  repository: moven/ali-px-disks
+  tag: master-efde606-1546024631
   pullPolicy: IfNotPresent
 
 nameOverride: ""

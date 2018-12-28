@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "ali-px-disks.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "ali-px-disks.name" . }}
+    chart: {{ template "ali-px-disks.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "ali-px-disks.name" . }}
+  template:
+    metadata:
+      name: {{ template "ali-px-disks.fullname" . }}
+      labels:
+        app: {{ template "ali-px-disks.name" . }}
+        chart: {{ template "ali-px-disks.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+        kind: daemonset
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: ["{{ .Values.partner }}", "{{ .Values.environment }}"]
