@@ -32,7 +32,7 @@ PX_DISK_PREFIX="${CLUSTER_ID}-px-disk"
 aliyun configure --mode EcsRamRole set --region ${REGION_ID} || errorExit "Couldn't configure aliyun CLI"
 
 instanceHasPxDisk() {
-  INSTANCE_PX_DISK_COUNT=$(aliyun ecs DescribeDisks --InstanceId ${INSTANCE_ID} | jq "[.Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\"))] | length") || errorExit "Couldn't get disk px disk count"
+  INSTANCE_PX_DISK_COUNT=$(aliyun ecs DescribeDisks --InstanceId ${INSTANCE_ID} --PageSize=100 | jq "[.Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\"))] | length") || errorExit "Couldn't get disk px disk count"
   case "${INSTANCE_PX_DISK_COUNT}" in
     "0")
       return 1
@@ -47,7 +47,7 @@ instanceHasPxDisk() {
 }
 
 pxAvailableDiskCount() {
-    PX_AVAILABLE_DISK_COUNT=$(aliyun ecs DescribeDisks | jq "[.Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\")) | select(.Status == \"Available\")] | length") || errorExit "Couldn't get disk px disk count"
+    PX_AVAILABLE_DISK_COUNT=$(aliyun ecs DescribeDisks --Status=Available --PageSize=100 | jq "[.Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\"))] | length") || errorExit "Couldn't get disk px disk count"
     echo ${PX_AVAILABLE_DISK_COUNT}
 }
 
@@ -65,7 +65,7 @@ shouldAttachPXDisk() {
 
 getCandidatePxDiskId() {
   DISK_INDEX=$(( $RANDOM % $(pxAvailableDiskCount) ))
-  PX_CANDIDATE_DISK=$(aliyun ecs DescribeDisks | jq -r "[ .Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\")) | select(.Status == \"Available\") ] | .[${DISK_INDEX}] | .DiskId")
+  PX_CANDIDATE_DISK=$(aliyun ecs DescribeDisks --Status=Available --PageSize=100 | jq -r "[ .Disks.Disk[] | select(.Description | contains(\"${PX_DISK_PREFIX}\")) ] | .[${DISK_INDEX}] | .DiskId")
   echo ${PX_CANDIDATE_DISK}
 }
 
